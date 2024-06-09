@@ -1,0 +1,46 @@
+info:
+  app:
+    name: '@info.app.name@'
+    version: '@info.app.version@'
+    grailsVersion: '@info.app.grailsVersion@'
+grails:
+  plugin:
+    databasemigration:
+      updateOnStart: true
+      updateOnStartFileName: changelog.groovy
+  mime:
+    disable:
+      accept:
+        header:
+          userAgents:
+          - Gecko
+          - WebKit
+          - Presto
+          - Trident
+    types:
+      json:
+      - application/json
+      - text/json
+  controllers:
+    defaultScope: singleton
+  views:
+    default:
+      codec: json
+dataSource:
+  url: jdbc:postgresql://localhost:5432/repozitorij_radova
+  driverClassName: org.postgresql.Driver
+  username: svc_repository
+  password: root
+  pooled: true
+  jmxExport: true
+  dbCreate: none
+hibernate:
+  cache:
+    queries: false
+    use_second_level_cache: false
+    use_query_cache: false
+    dialect: org.hibernate.dialect.PostgreSQLDialect
+
+server:
+  servlet:
+    context-path: /api
