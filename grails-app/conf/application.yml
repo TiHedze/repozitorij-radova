@@ -27,10 +27,10 @@ grails:
     default:
       codec: json
 dataSource:
-  url: jdbc:postgresql://localhost:5432/repozitorij_radova
+  url: jdbc:postgresql://postgres:5432/${DB_NAME}
   driverClassName: org.postgresql.Driver
-  username: svc_repository
-  password: root
+  username: ${DB_USERNAME}
+  password: ${DB_PASSWORD}
   pooled: true
   jmxExport: true
   dbCreate: none

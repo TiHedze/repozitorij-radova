@@ -2,7 +2,6 @@ plugins {
     id "groovy"
     id "org.grails.grails-web"
     id "org.grails.plugins.views-json"
-    id "war"
     id "idea"
     id "application"
     id "eclipse"

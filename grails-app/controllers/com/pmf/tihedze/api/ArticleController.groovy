@@ -9,4 +9,8 @@ class ArticleController {
     def getAll() {
         respond ([status: HttpStatus.OK],[message: 'Hello world!'])
     }
+
+    def handleNullPointerException(NullPointerException ex) {
+
+    }
 }

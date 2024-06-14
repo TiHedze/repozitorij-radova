@@ -6,6 +6,7 @@ import grails.gorm.transactions.Transactional
 
 @Transactional
 class AuthorService {
+    def dataSource
 
     def create(CreateAuthorCommand command) {
         var author = new Author(firstName: command.firstName, lastName: command.lastName)
