@@ -8,7 +8,7 @@ class Publication {
 
     static mapping = {
         table name: 'publications'
-        id column: 'id', sqlType: 'uuid', generator: 'uuid'
+        id column: 'id', sqlType: 'uuid', generator: 'uuid2'
         name column: 'name', sqlType: 'varchar'
         volume column: 'volume', sqlType: 'varchar'
         issue column: 'issue', sqlType: 'varchar'

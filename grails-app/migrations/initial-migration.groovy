@@ -14,7 +14,7 @@ databaseChangeLog = {
                 constraints(nullable: "false")
             }
 
-            column(name: "summary", type: "TSVECTOR") {
+            column(name: "summary", type: "TEXT") {
                 constraints(nullable: "false")
             }
 
