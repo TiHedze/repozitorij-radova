@@ -7,7 +7,7 @@ class AuthorResponse {
     String firstName
     String lastName
 
-    public AuthorResponse(Author author) {
+    AuthorResponse(Author author) {
         id = author.id.toString()
         firstName = author.firstName
         lastName = author.lastName

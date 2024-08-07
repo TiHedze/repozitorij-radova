@@ -2,7 +2,7 @@ package com.pmf.tihedze.repozitorijradova.commands.article
 
 import grails.validation.Validateable
 
-class CreateArticleCommand implements Validateable {
+class UpdateArticleCommand implements Validateable{
     String summary
     String title
     ArrayList<UUID> authorIds
@@ -10,7 +10,7 @@ class CreateArticleCommand implements Validateable {
 
     static constraints = {
         authorIds validator: {
-            !it.isEmpty()
+            !it.authorIds.isEmpty()
         }
         summary blank: false, nullable: false
         title blank: false, nullable: false

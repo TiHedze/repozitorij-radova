@@ -8,6 +8,9 @@ class AuthorUrlMappings {
             group '/authors', {
                 post "/" (versionedController << [action: 'create'])
                 get "/$id" (versionedController << [action: 'getById'])
+                get "/" (versionedController << [action: 'getAll'])
+                delete "/$id" (versionedController << [action: 'delete'])
+                put "/$id" (versionedController << [action: 'update'])
             }
         }
     }

@@ -27,20 +27,30 @@ grails:
     default:
       codec: json
 dataSource:
-  url: jdbc:postgresql://localhost:5432/repozitorij_radova
+  url: jdbc:postgresql://postgres:5432/${DB_NAME}
   driverClassName: org.postgresql.Driver
-  username: svc_repozitorijradova
-  password: root
+  username: ${DB_USERNAME}
+  password: ${DB_PASSWORD}
   pooled: true
   jmxExport: true
   dbCreate: none
+
 hibernate:
+  dialect: org.hibernate.dialect.PostgreSQL10Dialect
   cache:
     queries: false
     use_second_level_cache: false
     use_query_cache: false
-    dialect: org.hibernate.dialect.PostgreSQLDialect
+
 
 server:
   servlet:
     context-path: /api
+
+environments:
+  development:
+    dataSource:
+      url: jdbc:postgresql://localhost:5432/repozitorij_radova
+      logSql: true
+      username: svc_repozitorijradova
+      password: root
