@@ -11,7 +11,6 @@ import grails.gorm.transactions.Transactional
 import org.hibernate.SessionFactory
 import org.hibernate.query.NativeQuery
 import org.hibernate.type.PostgresUUIDType
-import org.hibernate.type.Type
 
 @Transactional
 class ArticleService {
