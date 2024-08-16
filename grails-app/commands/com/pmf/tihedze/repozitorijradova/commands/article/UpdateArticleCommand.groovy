@@ -6,7 +6,7 @@ class UpdateArticleCommand implements Validateable{
     String summary
     String title
     ArrayList<UUID> authorIds
-    UUID publicationId
+    UUID volumeId
 
     static constraints = {
         authorIds validator: {
@@ -14,6 +14,6 @@ class UpdateArticleCommand implements Validateable{
         }
         summary blank: false, nullable: false
         title blank: false, nullable: false
-        publicationId nullable: false
+        volumeId nullable: false
     }
 }

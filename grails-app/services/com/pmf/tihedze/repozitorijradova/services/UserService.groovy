@@ -12,8 +12,8 @@ import java.security.InvalidParameterException
 class UserService {
 
     void register(String username, String password) {
-        def user =  new User(username: username, passwordHash: password)
-        user.save(flush: true, insert: true)
+        final def user =  new User(username: username, passwordHash: password)
+        user.save(true)
     }
 
     String login(String username, String password) {

@@ -3,10 +3,12 @@ package com.pmf.tihedze.repozitorijradova.services
 import com.pmf.tihedze.repozitorijradova.Article
 import com.pmf.tihedze.repozitorijradova.Author
 import com.pmf.tihedze.repozitorijradova.Publication
+import com.pmf.tihedze.repozitorijradova.Volume
 import com.pmf.tihedze.repozitorijradova.commands.article.CreateArticleCommand
 import com.pmf.tihedze.repozitorijradova.commands.article.UpdateArticleCommand
 import com.pmf.tihedze.repozitorijradova.exceptions.AuthorNotFoundException
 import com.pmf.tihedze.repozitorijradova.exceptions.PublicationNotFoundException
+import com.pmf.tihedze.repozitorijradova.exceptions.VolumeNotFoundException
 import grails.gorm.transactions.Transactional
 import org.hibernate.SessionFactory
 import org.hibernate.query.NativeQuery
@@ -23,22 +25,20 @@ class ArticleService {
             from articles 
             where summary_search_vector @@ to_tsquery('english', :query)
             """
+
             final session = sessionFactory.currentSession
             final NativeQuery<Article> sqlQuery = session.createNativeQuery(rawQuery)
-
             final List<Article> results = sqlQuery.with {
                 addEntity(Article)
                 setParameter('query', query)
                 list()
             }
-
             return results
         }
-
         Article.findAll()
     }
 
-    def create(CreateArticleCommand command) {
+    Article create(CreateArticleCommand command) {
 
         def authors = Author.getAll(command.authorIds)
 
@@ -46,26 +46,24 @@ class ArticleService {
             throw new AuthorNotFoundException('No authors found with passed ids')
         }
 
-        def volume = Volume.findById(command.publicationId)
+        def volume = Volume.get(command.volumeId)
 
-        if (publication == null) {
-            throw new PublicationNotFoundException('No publication found with passed id')
+        if (volume == null) {
+            throw new VolumeNotFoundException('No volume found with passed id')
         }
 
-        def article = new Article(title: command.title, summary: command.summary, publication: publication)
+        def article = new Article(title: command.title, summary: command.summary, volume: volume)
 
-        for (def author : authors) {
-            article.addToAuthors(author)
-        }
+        article.authors.addAll(authors)
 
-        def result = article.save(flush: true)
+        Article result = article.save(flush:true)
 
         final def query = "UPDATE articles SET summary_search_vector = (select to_tsvector('english', :summary))" +
                 " WHERE id = :id"
 
-        def session = sessionFactory.currentSession
+        final def session = sessionFactory.currentSession
 
-        def nativeQuery = session.createNativeQuery(query)
+        final def nativeQuery = session.createNativeQuery(query)
 
         nativeQuery.with {
             setParameter('summary', article.summary)
@@ -78,42 +76,38 @@ class ArticleService {
         result
     }
 
-    def update(UpdateArticleCommand command, UUID id) {
-        def article = Article.get(id)
+    Article update(UpdateArticleCommand command, UUID id) {
+        final def article = Article.get(id)
 
-        def authors = Author.getAll(command.authorIds)
+        final def authors = Author.getAll(command.authorIds)
 
         if (authors.isEmpty()) {
             throw new AuthorNotFoundException('No authors found with passed ids')
         }
 
-        article.authors.forEach { article.removeFromAuthors(it) }
+        article.authors.removeAll(authors)
 
-        def publication = Publication.get(command.publicationId)
+        final def volume = Volume.get(command.volumeId)
 
-        if (publication == null) {
-            throw new PublicationNotFoundException('No publication found with passed id')
+        if (volume == null) {
+            throw new VolumeNotFoundException('No publication found with passed id')
         }
 
-        article.publication.removeFromArticles(article)
-
-        for (def author : authors) {
-            article.addToAuthors(author)
-        }
-
-        publication.addToArticles(article)
+        article.volume.removeFromArticles(article)
+        article.authors.addAll(authors)
+        volume.addToArticles(article)
 
         article.summary = command.summary
         article.title = command.title
 
-        article.save()
+        article.save(flush: true)
     }
 
-    def delete(UUID id) {
+    void delete(UUID id) {
         Article.get(id).delete()
     }
 
-    def getById(UUID id) {
+    Article getById(UUID id) {
         Article.get(id)
     }
 }

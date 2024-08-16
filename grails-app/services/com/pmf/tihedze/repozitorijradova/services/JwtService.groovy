@@ -2,15 +2,7 @@ package com.pmf.tihedze.repozitorijradova.services
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
-import com.auth0.jwt.interfaces.DecodedJWT
-import com.pmf.tihedze.repozitorijradova.User
 import groovy.transform.CompileStatic
-
-import java.security.Key
-import java.security.KeyFactory
-import java.security.PrivateKey
-import java.security.PublicKey
-import java.security.spec.X509EncodedKeySpec
 
 @CompileStatic
 class JwtService {
@@ -26,12 +18,13 @@ class JwtService {
             .sign(Algorithm.HMAC256(secret))
     }
 
-    static DecodedJWT decodeJwt(String token) {
+    static boolean valid(String token) {
         try {
             final def verifier = JWT.require(Algorithm.HMAC256(secret)).build()
-            verifier.verify(token);
+            def jwt = verifier.verify(token);
+            jwt.issuer == 'repozitorij-radova'
         } catch(Exception ignored) {
-            return null
+            false
         }
     }
 }

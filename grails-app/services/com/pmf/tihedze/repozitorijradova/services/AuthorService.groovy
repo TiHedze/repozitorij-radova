@@ -9,7 +9,7 @@ import grails.gorm.transactions.Transactional
 class AuthorService {
 
     def create(CreateAuthorCommand command) {
-        var author = new Author(firstName: command.firstName, lastName: command.lastName)
+        final def author = new Author(firstName: command.firstName, lastName: command.lastName)
         author.save()
     }
 
