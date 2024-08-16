@@ -57,4 +57,12 @@ environments:
       pooled: true
       jmxExport: true
       dbCreate: none
-
+  production:
+    dataSource:
+      url: jdbc:postgresql://postgres:5432/${DB_NAME}
+      driverClassName: org.postgresql.Driver
+      username: ${DB_USERNAME}
+      password: ${DB_PASSWORD}
+      pooled: true
+      jmxExport: true
+      dbCreate: none

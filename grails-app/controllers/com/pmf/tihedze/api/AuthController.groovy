@@ -1,5 +1,7 @@
 package com.pmf.tihedze.api
 
+import com.pmf.tihedze.repozitorijradova.commands.auth.AuthCommand
+import com.pmf.tihedze.repozitorijradova.services.UserService
 import org.springframework.http.HttpStatus
 
 class AuthController {
@@ -8,15 +10,16 @@ class AuthController {
 
     private static Integer ONE_DAY = 24 * 3600 * 1000
 
-    def userService
+    UserService userService
 
-    def login(String username, String password) {
-        def token = userService.login(username, password)
+    def login(AuthCommand login) {
+        def token = userService.login(login.username, login.password)
         def now = new Date()
         respond([status: HttpStatus.OK], [token: token, exipiresAt: now.getTime() + ONE_DAY])
     }
 
-    def register(String username, String password, String publicationName) {
-        userService.register(username, password, publicationName)
+    def register(AuthCommand register) {
+        userService.register(register.username, register.password)
+        respond([status: HttpStatus.OK], null)
     }
 }

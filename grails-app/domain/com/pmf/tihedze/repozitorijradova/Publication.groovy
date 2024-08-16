@@ -8,9 +8,8 @@ class Publication {
         table name: 'publications'
         id column: 'id', type: 'pg-uuid', generator: 'uuid2'
         name column: 'name', sqlType: 'varchar'
-        issue column: 'issue', sqlType: 'varchar'
         version false
     }
 
-    static hasMany = [volumes: Volume, users: User]
+    static hasMany = [volumes: Volume]
 }

@@ -17,12 +17,11 @@ class JwtService {
     private static int HOUR = 3600 * 1000
     private static String secret = 'secret'
 
-    static String generateJwt(User user, String username) {
+    static String generateJwt(String username) {
         final Date now = new Date()
         JWT.create()
             .withIssuer('repozitorij-radova')
             .withClaim('username', username)
-            .withClaim('publication', user.publication.name)
             .withExpiresAt(new Date(now.getTime() + 24 * HOUR))
             .sign(Algorithm.HMAC256(secret))
     }

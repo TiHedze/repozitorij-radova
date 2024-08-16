@@ -6,7 +6,7 @@ class Volume {
     String issue
 
     static mapping = {
-        name: 'volumes'
+        table name: 'volumes'
         id column: 'id', type: 'pg-uuid', generator: 'uuid2'
         volume column: 'volume', 'sqlType': 'varchar'
         issue column: 'issue', 'sqlType': 'varchar'

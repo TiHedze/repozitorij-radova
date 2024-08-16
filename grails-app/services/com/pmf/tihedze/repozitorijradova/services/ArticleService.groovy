@@ -35,7 +35,7 @@ class ArticleService {
             return results
         }
 
-        return Article.findAll()
+        Article.findAll()
     }
 
     def create(CreateArticleCommand command) {
@@ -46,7 +46,7 @@ class ArticleService {
             throw new AuthorNotFoundException('No authors found with passed ids')
         }
 
-        def publication = Publication.get(command.publicationId)
+        def volume = Volume.findById(command.publicationId)
 
         if (publication == null) {
             throw new PublicationNotFoundException('No publication found with passed id')
