@@ -1,5 +1,7 @@
 package com.pmf.tihedze.repozitorijradova
 
+import org.hibernate.type.PostgresUUIDType
+
 class Publication {
     UUID id
     String name

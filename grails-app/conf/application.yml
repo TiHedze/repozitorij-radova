@@ -9,31 +9,18 @@ grails:
       updateOnStart: true
       updateOnStartFileName: changelog.groovy
   mime:
-    disable:
-      accept:
-        header:
-          userAgents:
-          - Gecko
-          - WebKit
-          - Presto
-          - Trident
     types:
+      all:
+        - '*/*'
       json:
-      - application/json
-      - text/json
+        - application/json
+        - text/json
   controllers:
     defaultScope: singleton
   views:
     default:
       codec: json
-dataSource:
-  url: jdbc:postgresql://postgres:5432/${DB_NAME}
-  driverClassName: org.postgresql.Driver
-  username: ${DB_USERNAME}
-  password: ${DB_PASSWORD}
-  pooled: true
-  jmxExport: true
-  dbCreate: none
+
 
 hibernate:
   dialect: org.hibernate.dialect.PostgreSQL10Dialect

@@ -5,12 +5,10 @@ import com.pmf.tihedze.repozitorijradova.Publication
 class PublicationResponse {
     String id
     String name
-    String volume
-    String issue
+    List<VolumeResponse> volumes
     PublicationResponse(Publication publication) {
         id = publication.id.toString()
         name = publication.name
-        volume = publication.volume
-        issue = publication.issue
+        volumes = publication.volumes.collect { new VolumeResponse(it)}
     }
 }

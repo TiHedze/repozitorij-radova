@@ -11,7 +11,6 @@ class PublicationController  {
     static responseFormats = ['json']
     static namespace = 'v1'
 
-
     PublicationService publicationService
 
     def create(CreatePublicationCommand command) {
