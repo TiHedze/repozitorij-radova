@@ -10,7 +10,7 @@ class UpdateArticleCommand implements Validateable{
 
     static constraints = {
         authorIds validator: {
-            !it.authorIds.isEmpty()
+            !it.isEmpty()
         }
         summary blank: false, nullable: false
         title blank: false, nullable: false

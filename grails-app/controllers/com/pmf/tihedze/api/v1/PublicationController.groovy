@@ -1,4 +1,4 @@
-package com.pmf.tihedze.api
+package com.pmf.tihedze.api.v1
 
 import com.pmf.tihedze.repozitorijradova.Publication
 import com.pmf.tihedze.repozitorijradova.commands.publication.CreatePublicationCommand

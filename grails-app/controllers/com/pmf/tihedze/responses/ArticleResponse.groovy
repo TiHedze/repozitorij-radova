@@ -6,7 +6,6 @@ class ArticleResponse {
     String id
     String title
     String summary
-    PublicationResponse publication
     List<AuthorResponse> authors
     VolumeResponse volume
 
@@ -14,7 +13,6 @@ class ArticleResponse {
         id = article.id.toString()
         title = article.title
         summary = article.summary
-        publication = new PublicationResponse(article.publication)
         authors = article.authors.collect { new AuthorResponse(it)}
         volume = new VolumeResponse(article.volume)
     }

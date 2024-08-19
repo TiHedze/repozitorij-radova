@@ -1,11 +1,9 @@
-package com.pmf.tihedze.api
+package com.pmf.tihedze.api.v1
 
+import com.pmf.tihedze.api.BaseController
 import com.pmf.tihedze.repozitorijradova.Article
 import com.pmf.tihedze.repozitorijradova.commands.article.CreateArticleCommand
 import com.pmf.tihedze.repozitorijradova.commands.article.UpdateArticleCommand
-import com.pmf.tihedze.repozitorijradova.exceptions.ArticleNotFoundException
-import com.pmf.tihedze.repozitorijradova.exceptions.AuthorNotFoundException
-import com.pmf.tihedze.repozitorijradova.exceptions.VolumeNotFoundException
 import com.pmf.tihedze.repozitorijradova.services.ArticleService
 import com.pmf.tihedze.responses.ArticleResponse
 import org.springframework.http.HttpStatus

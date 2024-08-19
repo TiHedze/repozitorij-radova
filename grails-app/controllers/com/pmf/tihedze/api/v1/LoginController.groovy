@@ -1,5 +1,6 @@
-package com.pmf.tihedze.api
+package com.pmf.tihedze.api.v1
 
+import com.pmf.tihedze.api.BaseController
 import com.pmf.tihedze.repozitorijradova.commands.auth.AuthCommand
 import com.pmf.tihedze.repozitorijradova.services.UserService
 import groovy.time.TimeCategory
