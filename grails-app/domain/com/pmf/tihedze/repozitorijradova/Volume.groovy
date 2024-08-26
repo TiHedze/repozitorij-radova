@@ -12,6 +12,11 @@ class Volume {
         issue column: 'issue', 'sqlType': 'varchar'
         version false
     }
+
     static hasMany = [articles: Article]
     static hasOne = [publication: Publication]
+
+    static constraints = {
+        publication nullable: true
+    }
 }

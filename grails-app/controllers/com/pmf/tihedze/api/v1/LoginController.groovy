@@ -7,7 +7,6 @@ import groovy.time.TimeCategory
 import org.springframework.http.HttpStatus
 
 class LoginController extends BaseController {
-    static responseFormats = ['json']
     static namespace = 'v1'
     UserService userService
 

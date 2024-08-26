@@ -2,9 +2,9 @@ package com.pmf.tihedze
 
 class PublicationUrlMappings {
     static mappings = {
-        def controller = [controller: 'publication']
+        final def controller = [controller: 'publication']
         group '/v1', {
-            def versionedController = controller << [namespace: 'v1']
+            final def versionedController = controller << [namespace: 'v1']
             group '/publications', {
                 get "/"(versionedController << [action: 'getAll'])
                 get "/$id"(versionedController << [action: 'getById'])

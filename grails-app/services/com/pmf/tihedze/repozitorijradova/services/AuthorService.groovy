@@ -3,6 +3,7 @@ package com.pmf.tihedze.repozitorijradova.services
 import com.pmf.tihedze.repozitorijradova.Author
 import com.pmf.tihedze.repozitorijradova.commands.author.CreateAuthorCommand
 import com.pmf.tihedze.repozitorijradova.commands.author.UpdateAuthorCommand
+import com.pmf.tihedze.repozitorijradova.exceptions.AuthorNotFoundException
 import grails.gorm.transactions.Transactional
 
 @Transactional
@@ -28,6 +29,9 @@ class AuthorService {
 
     def delete(UUID id) {
         final def author = Author.get(id)
+        if (author == null) {
+            throw new AuthorNotFoundException('No author found for the provided id')
+        }
         author.delete()
     }
 

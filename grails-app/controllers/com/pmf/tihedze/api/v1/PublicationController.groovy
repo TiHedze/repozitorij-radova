@@ -1,5 +1,6 @@
 package com.pmf.tihedze.api.v1
 
+import com.pmf.tihedze.api.BaseController
 import com.pmf.tihedze.repozitorijradova.Publication
 import com.pmf.tihedze.repozitorijradova.commands.publication.CreatePublicationCommand
 import com.pmf.tihedze.repozitorijradova.commands.publication.UpdatePublicationCommand
@@ -7,8 +8,7 @@ import com.pmf.tihedze.repozitorijradova.services.PublicationService
 import com.pmf.tihedze.responses.PublicationResponse
 import org.springframework.http.HttpStatus
 
-class PublicationController  {
-    static responseFormats = ['json']
+class PublicationController extends BaseController {
     static namespace = 'v1'
 
     PublicationService publicationService

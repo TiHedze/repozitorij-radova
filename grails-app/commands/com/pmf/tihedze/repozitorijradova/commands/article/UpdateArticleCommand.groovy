@@ -7,13 +7,4 @@ class UpdateArticleCommand implements Validateable{
     String title
     ArrayList<UUID> authorIds
     UUID volumeId
-
-    static constraints = {
-        authorIds validator: {
-            !it.isEmpty()
-        }
-        summary blank: false, nullable: false
-        title blank: false, nullable: false
-        volumeId nullable: false
-    }
 }

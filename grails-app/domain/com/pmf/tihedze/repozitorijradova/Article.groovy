@@ -15,8 +15,10 @@ class Article {
 
     static hasMany = [authors: Author]
     static hasOne = [volume: Volume]
+    static belongsTo = [Author]
 
     static constraints = {
         title unique: true
+        volume nullable: true
     }
 }

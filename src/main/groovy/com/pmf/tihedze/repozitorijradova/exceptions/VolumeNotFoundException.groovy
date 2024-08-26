@@ -1,6 +1,6 @@
 package com.pmf.tihedze.repozitorijradova.exceptions
 
-class VolumeNotFoundException extends RuntimeException {
+class VolumeNotFoundException extends ApplicationExceptionBase {
     VolumeNotFoundException(String message) {
         super(message)
     }

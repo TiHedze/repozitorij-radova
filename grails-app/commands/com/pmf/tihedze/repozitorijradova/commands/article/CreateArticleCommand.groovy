@@ -14,6 +14,5 @@ class CreateArticleCommand implements Validateable {
         }
         summary blank: false, nullable: false
         title blank: false, nullable: false
-        volumeId nullable: false
     }
 }

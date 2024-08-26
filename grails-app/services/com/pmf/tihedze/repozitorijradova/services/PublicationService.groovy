@@ -9,30 +9,38 @@ import grails.gorm.transactions.Transactional
 @Transactional
 class PublicationService {
 
-    def getById(UUID id) {
+    Publication getById(UUID id) {
         final def publication = Publication.findById(id)
         if (publication == null) {
             throw new PublicationNotFoundException("No publication with id ${id} exists")
         }
+        publication
     }
 
-    def getAll() {
+    List<Publication> getAll(String query) {
+        if (query != null) {
+            return Publication.findByNameLike(query)
+        }
+
         Publication.getAll()
     }
 
-    def create(CreatePublicationCommand command) {
+    Publication create(CreatePublicationCommand command) {
         final def publication = new Publication(name: command.name)
         publication.save(true)
     }
 
-    def delete(UUID id) {
+    void delete(UUID id) {
         final def publication = Publication.findById(id)
+        if (publication == null) {
+            throw new PublicationNotFoundException('No publication found for the provided id')
+        }
         publication.delete()
     }
 
-    def update(UpdatePublicationCommand command, UUID id) {
+    Publication update(UpdatePublicationCommand command, UUID id) {
         final def publication = Publication.findById(id)
         publication.name = command.name
-        publication.save()
+        publication.save(flush: true)
     }
 }

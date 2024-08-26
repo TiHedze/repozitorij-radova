@@ -7,13 +7,15 @@ class ArticleResponse {
     String title
     String summary
     List<AuthorResponse> authors
-    VolumeResponse volume
+    String volumeName
+    String volumeId
 
     ArticleResponse(Article article) {
         id = article.id.toString()
         title = article.title
         summary = article.summary
         authors = article.authors.collect { new AuthorResponse(it)}
-        volume = new VolumeResponse(article.volume)
+        volumeName = article.volume.volume
+        volumeId = article.volume.id.toString()
     }
 }

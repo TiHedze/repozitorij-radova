@@ -1,5 +1,6 @@
 package com.pmf.tihedze.api.v1
 
+import com.pmf.tihedze.api.BaseController
 import com.pmf.tihedze.repozitorijradova.Author
 import com.pmf.tihedze.repozitorijradova.commands.author.CreateAuthorCommand
 import com.pmf.tihedze.repozitorijradova.commands.author.UpdateAuthorCommand
@@ -7,8 +8,7 @@ import com.pmf.tihedze.repozitorijradova.services.AuthorService
 import com.pmf.tihedze.responses.AuthorResponse
 import org.springframework.http.HttpStatus
 
-class AuthorController {
-    static responseFormats = ['json']
+class AuthorController  extends BaseController {
     static namespace = 'v1'
 
     AuthorService authorService

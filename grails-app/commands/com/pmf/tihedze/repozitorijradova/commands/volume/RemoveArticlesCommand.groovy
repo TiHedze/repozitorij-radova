@@ -2,7 +2,7 @@ package com.pmf.tihedze.repozitorijradova.commands.volume
 
 import grails.validation.Validateable
 
-class AddArticlesCommand implements Validateable{
+class RemoveArticlesCommand implements Validateable{
     List<String> articleIds
 
     static constraints = {
