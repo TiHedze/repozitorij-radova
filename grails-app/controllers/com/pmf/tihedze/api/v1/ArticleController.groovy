@@ -2,9 +2,8 @@ package com.pmf.tihedze.api.v1
 
 import com.pmf.tihedze.api.BaseController
 import com.pmf.tihedze.repozitorijradova.Article
-import com.pmf.tihedze.repozitorijradova.commands.article.AddAuthorsCommand
+import com.pmf.tihedze.repozitorijradova.commands.article.ArticleQueryCommand
 import com.pmf.tihedze.repozitorijradova.commands.article.CreateArticleCommand
-import com.pmf.tihedze.repozitorijradova.commands.article.RemoveAuthorsCommand
 import com.pmf.tihedze.repozitorijradova.commands.article.UpdateArticleCommand
 import com.pmf.tihedze.repozitorijradova.services.ArticleService
 import com.pmf.tihedze.responses.ArticleResponse
@@ -15,9 +14,14 @@ class ArticleController extends BaseController{
 
     ArticleService articleService
 
-    def getAll(String query) {
+    def getAll() {
         final def articles = articleService.getArticles(query)
         successResponse(articles)
+    }
+
+    def getByQuery(ArticleQueryCommand query) {
+        final def response = articleService.getByQuery(query)
+        successResponse(response)
     }
 
     def getById(String id) {
@@ -28,25 +32,13 @@ class ArticleController extends BaseController{
 
     def create(CreateArticleCommand command) {
         final def result = articleService.create(command)
-        successResponse(result)
+        idResponse(result.id)
     }
 
     def update(String id, UpdateArticleCommand command) {
         final def uuid = UUID.fromString(id)
         final def result = articleService.update(command, uuid)
-        successResponse(result)
-    }
-
-    def addAuthors(AddAuthorsCommand command, String id) {
-        final def uuid = UUID.fromString(id)
-        final def result = articleService.addAuthors(command, uuid)
-        successResponse(result)
-    }
-
-    def removeAuthors(RemoveAuthorsCommand command, String id) {
-        final def uuid = UUID.fromString(id)
-        final def result = articleService.removeAuthors(command, uuid)
-        successResponse(result)
+        idResponse(result.id)
     }
 
     def delete(String id) {
@@ -55,9 +47,17 @@ class ArticleController extends BaseController{
         respond([status: HttpStatus.ACCEPTED])
     }
 
+    def populateDatabase() {
+
+    }
+
     private def successResponse(Article article) {
         final def response = new ArticleResponse(article)
         respond([status: HttpStatus.OK], response)
+    }
+
+    private def idResponse(UUID id) {
+        respond([status:HttpStatus.OK], [id: id.toString()])
     }
 
     private def successResponse(List<Article> articles) {

@@ -4,15 +4,15 @@ import com.pmf.tihedze.repozitorijradova.Article
 import com.pmf.tihedze.repozitorijradova.Author
 import com.pmf.tihedze.repozitorijradova.Publication
 import com.pmf.tihedze.repozitorijradova.Volume
-import com.pmf.tihedze.repozitorijradova.commands.article.AddAuthorsCommand
-import com.pmf.tihedze.repozitorijradova.commands.article.CreateArticleCommand
-import com.pmf.tihedze.repozitorijradova.commands.article.RemoveAuthorsCommand
-import com.pmf.tihedze.repozitorijradova.commands.article.UpdateArticleCommand
+import com.pmf.tihedze.repozitorijradova.commands.article.*
 import com.pmf.tihedze.repozitorijradova.exceptions.ArticleNotFoundException
 import com.pmf.tihedze.repozitorijradova.exceptions.AuthorNotFoundException
-import com.pmf.tihedze.repozitorijradova.exceptions.PublicationNotFoundException
 import com.pmf.tihedze.repozitorijradova.exceptions.VolumeNotFoundException
+import grails.gorm.transactions.NotTransactional
 import grails.gorm.transactions.Transactional
+import groovy.xml.XmlSlurper
+import groovyjarjarantlr.collections.List
+import org.hibernate.FlushMode
 import org.hibernate.SessionFactory
 import org.hibernate.query.NativeQuery
 import org.hibernate.type.PostgresUUIDType
@@ -21,8 +21,8 @@ import org.hibernate.type.PostgresUUIDType
 class ArticleService {
     SessionFactory sessionFactory
 
-    List<Article> getArticles(String query) {
-        if (query != null) {
+    def getArticles(String query) {
+        if (query != null && !query.isBlank() && !query.isEmpty()) {
             query = query.replace(' ', " & ")
             final String rawQuery = """
             select id, title, summary, volume_id
@@ -32,16 +32,83 @@ class ArticleService {
 
             final session = sessionFactory.currentSession
             final NativeQuery<Article> sqlQuery = session.createNativeQuery(rawQuery)
-            final List<Article> results = sqlQuery.with {
+            final def results = sqlQuery.with {
                 addEntity(Article)
                 setParameter('query', query)
                 list()
             }
             return results
         }
-        Article.findAll()
+        return Article.findAll {it }
     }
 
+    def getByQuery(ArticleQueryCommand command) {
+        def articles;
+        if (command.summaryText != null && !command.summaryText.isBlank()) {
+            final String rawQuery = """
+            select id, title, summary, volume_id
+            from articles 
+            where summary_search_vector @@ to_tsquery('english', :query)
+            """
+
+            final session = sessionFactory.currentSession
+            final NativeQuery<Article> sqlQuery = session.createNativeQuery(rawQuery)
+            articles = sqlQuery.with {
+                addEntity(Article)
+                setParameter('query', command.summaryText)
+                list()
+            } as List
+        }
+
+        if (!articles?.empty) {
+            return articles.findAll { article ->
+                def matchedAuthors = []
+                def partialPublicationName = command.publicationName ?: ""
+                def partialVolumeName = command.volumeName ?: ""
+                def partialArticleName = command.articleName ?: ""
+
+                def publicationMatches = !partialPublicationName || article.volume.publication.title.contains(partialPublicationName)
+                def volumeMatches = !partialVolumeName || article.volume.volume.contains(partialVolumeName)
+                def articleNameMatches = !partialArticleName || article.title.contains(partialArticleName)
+
+                if (command.authorName) {
+                matchedAuthors = article.authors.findAll { author ->
+                    "${author.firstName.toLowerCase()} ${author.lastName.toLowerCase()}".contains(command.authorName)
+                    }
+                } else {
+                    matchedAuthors = article.authors.findAll()
+                }
+                    publicationMatches && volumeMatches && articleNameMatches && !matchedAuthors.empty
+            }
+        }
+        def results = Article.createCriteria().list {
+            // Join with related entities
+            createAlias('authors', 'a')
+            createAlias('volume', 'v')
+            createAlias('v.publication', 'p')
+
+            // Apply filter based on publication name if provided
+            if (command.publicationName) {
+                ilike('p.name', "%${command.publicationName}%")
+            }
+
+            if (command.authorName) {
+            ilike('a.firstName', "%${authorName}%")
+            ilike('a.lastName', "%${authorName}%")
+            }
+
+            if (command.volumeName) {
+                ilike('v.volume',"%${command.volumeName}%")
+            }
+
+            if (command.articleName) {
+                ilike('a.title',"%${command.articleName}%")
+            }
+        }
+
+        return results
+    }
+    @NotTransactional
     Article create(CreateArticleCommand command) {
 
         def authors = Author.getAll(command.authorIds)
@@ -50,18 +117,18 @@ class ArticleService {
             throw new AuthorNotFoundException('No authors found with passed ids')
         }
 
-        def volume = Volume.get(command.volumeId)
-
-        if (volume == null) {
-            throw new VolumeNotFoundException('No volume found with passed id')
-        }
-
-        def article = new Article(title: command.title, summary: command.summary, volume: volume)
+        def article = new Article(title: command.title, summary: command.summary, url: command.url)
 
         authors.each {article.addToAuthors(it)}
 
+        def result = Article.withSession { session ->
+            session.beginTransaction()
+            session.setFlushMode(FlushMode.COMMIT)
+            article.save(flush:true, validate: false)
+            session.joinTransaction()
+            return article;
 
-        Article result = article.save(flush:true)
+        }
 
         final def query = "UPDATE articles SET summary_search_vector = (select to_tsvector('english', :summary))" +
                 " WHERE id = :id"
@@ -69,7 +136,6 @@ class ArticleService {
         final def session = sessionFactory.currentSession
 
         final def nativeQuery = session.createNativeQuery(query)
-
         nativeQuery.with {
             setParameter('summary', article.summary)
             setParameter('id', article.id, PostgresUUIDType.INSTANCE)
@@ -136,14 +202,6 @@ class ArticleService {
         result
     }
 
-    Article addAuthors(AddAuthorsCommand command,UUID id) {
-        addOrRemoveAuthors(command.authorIds, id)
-    }
-
-    Article removeAuthors(RemoveAuthorsCommand command, UUID id) {
-        addOrRemoveAuthors(command.authorIds,id, true)
-    }
-
     void delete(UUID id) {
         final def article = Article.get(id)
         if (article == null) {
@@ -156,20 +214,32 @@ class ArticleService {
         Article.get(id)
     }
 
-    private static Article addOrRemoveAuthors(List<String> authorIds, UUID articleId, boolean delete = false) {
-        final def authors = Author.getAll(authorIds.collect { UUID.fromString(it)})
+    def populateDatabase() {
+        def xml = new URL('https://hrcak.srce.hr/oai/?verb=ListRecords&metadataPrefix=oai_dc&set=journal:27').text
+        def slurper = new XmlSlurper()
+                .parseText(xml)
+                .declareNamespace(
+                        oai_dc: 'http://www.openarchives.org/OAI/2.0/oai_dc/',
+                        dc: 'http://purl.org/dc/elements/1.1/'
+                )
 
-        if (authors == null) {
-            throw new AuthorNotFoundException('No authors found for provided ids')
+        def publications = []
+        def authors = []
+        def issues = []
+        def volumes = []
+        def articles = []
+
+        slurper.ListRecords.record.each {
+            it.metadata.'oai_dc:dc'.'dc:creator'*.each {
+                def line = it.text()
+                def indexOfLastWhitespace = line.lastIndexOf(' ');
+                def firstName = line.substring(0, indexOfLastWhitespace)
+                def lastName = line.substring(indexOfLastWhitespace + 1)
+                authors << new Author(firstName: firstName, lastName: lastName)
+            }
+
+            publications << new Publication(name: it.metadata.'oai_dc'.'dc:source'*. where { } )
         }
 
-        final def article = Article.get(articleId)
-
-        if (delete) {
-            authors.each {article.removeFromAuthors(it)}
-        } else {
-            authors.each {article.addToAuthors(it)}
-        }
-        article.save(flush: true)
     }
 }

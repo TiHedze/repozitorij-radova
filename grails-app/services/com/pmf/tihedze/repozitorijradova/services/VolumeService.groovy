@@ -3,9 +3,7 @@ package com.pmf.tihedze.repozitorijradova.services
 import com.pmf.tihedze.repozitorijradova.Article
 import com.pmf.tihedze.repozitorijradova.Publication
 import com.pmf.tihedze.repozitorijradova.Volume
-import com.pmf.tihedze.repozitorijradova.commands.volume.AddArticlesCommand
 import com.pmf.tihedze.repozitorijradova.commands.volume.CreateVolumeCommand
-import com.pmf.tihedze.repozitorijradova.commands.volume.RemoveArticlesCommand
 import com.pmf.tihedze.repozitorijradova.exceptions.ArticleNotFoundException
 import com.pmf.tihedze.repozitorijradova.exceptions.PublicationNotFoundException
 import com.pmf.tihedze.repozitorijradova.exceptions.VolumeNotFoundException
@@ -26,6 +24,14 @@ class VolumeService {
     List<Volume> getAllByPublicationName(String query) {
         final List<Publication> publications = Publication.findAllByNameLike(query)
         publications.collectMany { it.volumes}
+    }
+
+    List<Volume> getAllByIssue(String issue) {
+        Volume.findAllByIssue(issue)
+    }
+
+    List<Volume> getAll() {
+        Volume.findAll()
     }
 
     Volume create(CreateVolumeCommand command) {
@@ -65,13 +71,6 @@ class VolumeService {
         Volume.findByIssue(issue)
     }
 
-    Volume addArticles(AddArticlesCommand command, UUID id) {
-        addOrRemoveArticles(command.articleIds, id)
-    }
-
-    Volume removeArticles(RemoveArticlesCommand command, UUID id) {
-        addOrRemoveArticles(command.articleIds, id, true)
-    }
 
     private static Volume addOrRemoveArticles(List<String> articleIds, UUID volumeId, boolean delete = false) {
         final def articleUuids = articleIds.collect {UUID.fromString(it)}

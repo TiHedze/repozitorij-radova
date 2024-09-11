@@ -6,5 +6,4 @@ class UpdateArticleCommand implements Validateable{
     String summary
     String title
     ArrayList<UUID> authorIds
-    UUID volumeId
 }

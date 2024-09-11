@@ -3,9 +3,10 @@ package com.pmf.tihedze.repozitorijradova.commands.publication
 import grails.validation.Validateable
 
 class CreatePublicationCommand implements Validateable {
-    String name
+    String title
+    String source
 
     static constraints = {
-        name(blank: false, nullable: false)
+        title(blank: false, nullable: false)
     }
 }

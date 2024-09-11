@@ -4,12 +4,14 @@ import com.pmf.tihedze.repozitorijradova.Publication
 
 class PublicationResponse {
     String id
-    String name
+    String title
+    String source
     List<VolumeResponse> volumes
 
     PublicationResponse(Publication publication) {
         id = publication.id.toString()
-        name = publication.name
+        title = publication.name
+        source = publication.source
         volumes = publication.volumes.collect { new VolumeResponse(it)}
     }
 }

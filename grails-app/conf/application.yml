@@ -8,6 +8,10 @@ grails:
     databasemigration:
       updateOnStart: true
       updateOnStartFileName: changelog.groovy
+  cors:
+    enabled: true
+    allowedOrigins:
+      - '*'
   mime:
     types:
       all:

@@ -7,6 +7,7 @@ class AuthorUrlMappings {
             final def versionedController = controller << [namespace: 'v1']
             group '/authors', {
                 post "/" (versionedController << [action: 'create'])
+                get "/query"(versionedController << [action: 'getByQuery'])
                 get "/$id" (versionedController << [action: 'getById'])
                 get "/" (versionedController << [action: 'getAll'])
                 delete "/$id" (versionedController << [action: 'delete'])

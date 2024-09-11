@@ -15,8 +15,6 @@ class AuthInterceptor {
         match(controller: 'article', action: 'create')
         match(controller: 'article', action: 'update')
         match(controller: 'article', action: 'delete')
-        match(controller: 'article', action: 'addAuthors')
-        match(controller: 'article', action: 'removeAuthors')
         match(controller: 'author', action: 'create')
         match(controller: 'author', action: 'update')
         match(controller: 'author', action: 'delete')
@@ -26,8 +24,6 @@ class AuthInterceptor {
         match(controller: 'volume', action: 'create')
         match(controller: 'volume', action: 'update')
         match(controller: 'volume', action: 'delete')
-        match(controller: 'volume', action: 'addArticles')
-        match(controller: 'volume', action: 'removeArticles')
     }
 
     @Override

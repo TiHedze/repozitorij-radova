@@ -4,6 +4,7 @@ import com.pmf.tihedze.repozitorijradova.Author
 import com.pmf.tihedze.repozitorijradova.commands.author.CreateAuthorCommand
 import com.pmf.tihedze.repozitorijradova.commands.author.UpdateAuthorCommand
 import com.pmf.tihedze.repozitorijradova.exceptions.AuthorNotFoundException
+import com.pmf.tihedze.responses.AuthorResponse
 import grails.gorm.transactions.Transactional
 
 @Transactional
@@ -15,7 +16,11 @@ class AuthorService {
     }
 
     def getById(UUID id) {
-        Author.get(id);
+        def author = Author.where{
+            id == id
+        }.join('articles').get()
+        return new AuthorResponse(author)
+
     }
 
     def update(UUID id, UpdateAuthorCommand command) {
@@ -25,6 +30,15 @@ class AuthorService {
         author.lastName = command.lastName
 
         author.save()
+    }
+
+    def getAuthorByQuery(String query) {
+        Author.createCriteria().list {
+            or {
+                ilike('firstName', "%$query%")
+                ilike('lastName', "%$query%")
+            }
+        }
     }
 
     def delete(UUID id) {

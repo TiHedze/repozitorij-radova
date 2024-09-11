@@ -11,8 +11,7 @@ class ArticleUrlMappings {
                 post "/"(versionedController << [action: 'create'])
                 put "/$id"(versionedController << [action: 'update'])
                 delete "/$id"(versionedController << [action: 'delete'])
-                post "/$id/add-authors"(versionedController << [action: 'addAuthors'])
-                post "/$id/remove-authors"(versionedController << [action: 'removeAuthors'])
+                get "/query"(versionedController << [action: 'getByQuery'])
             }
         }
     }

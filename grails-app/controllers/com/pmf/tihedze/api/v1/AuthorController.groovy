@@ -21,7 +21,7 @@ class AuthorController  extends BaseController {
     def getById(String id) {
         final def uuid = UUID.fromString(id)
         final def author = authorService.getById(uuid)
-        successResponse(author)
+        respond([status: HttpStatus.OK], author)
     }
 
     def update(String id, UpdateAuthorCommand command) {
@@ -39,6 +39,13 @@ class AuthorController  extends BaseController {
         final def uuid = UUID.fromString(id)
         authorService.delete(uuid)
         respond([status: HttpStatus.ACCEPTED])
+    }
+
+    def getByQuery() {
+        def query = params.get('authorName')
+        def author = authorService.getAuthorByQuery(query)
+        successResponse(author)
+
     }
 
     private def successResponse(Author author) {

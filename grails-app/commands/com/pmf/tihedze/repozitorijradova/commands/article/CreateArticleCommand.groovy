@@ -6,7 +6,7 @@ class CreateArticleCommand implements Validateable {
     String summary
     String title
     ArrayList<UUID> authorIds
-    UUID volumeId
+    String url
 
     static constraints = {
         authorIds validator: {
