@@ -45,19 +45,8 @@ class PublicationController extends BaseController {
     }
 
     def populateDatabase() {
-        try {
-            def result
-            if (params.get('token')) {
-                 result = articleService.populateDatabase(params.get('token'))
-            }else {
-                result = articleService.populateDatabase()
-            }
-
-            respond([status: HttpStatus.OK], [token: result])
-
-        } catch(Exception ex) {
-            log.error(ex.message)
-        }
+        articleService.populateDatabase()
+        respond([status: HttpStatus.OK], [:])
     }
 
     private def successResponse(Publication publication) {
