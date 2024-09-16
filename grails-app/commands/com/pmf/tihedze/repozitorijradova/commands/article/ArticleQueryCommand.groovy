@@ -8,6 +8,7 @@ class ArticleQueryCommand implements Validateable{
     String volumeName
     String summaryText
     String articleName
+    String year
 
     static constraints = {
         publicationName nullale: true, blank: true
@@ -15,5 +16,6 @@ class ArticleQueryCommand implements Validateable{
         volumeName nullale: true, blank: true
         summaryText nullale: true, blank: true
         articleName nullale: true, blank: true
+        year nullable: true, blank: true
     }
 }

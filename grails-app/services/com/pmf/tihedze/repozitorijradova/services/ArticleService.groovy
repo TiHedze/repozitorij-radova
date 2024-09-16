@@ -4,11 +4,12 @@ import com.pmf.tihedze.repozitorijradova.Article
 import com.pmf.tihedze.repozitorijradova.Author
 import com.pmf.tihedze.repozitorijradova.Publication
 import com.pmf.tihedze.repozitorijradova.Volume
-import com.pmf.tihedze.repozitorijradova.commands.article.*
+import com.pmf.tihedze.repozitorijradova.commands.article.ArticleQueryCommand
+import com.pmf.tihedze.repozitorijradova.commands.article.CreateArticleCommand
+import com.pmf.tihedze.repozitorijradova.commands.article.UpdateArticleCommand
 import com.pmf.tihedze.repozitorijradova.exceptions.ArticleNotFoundException
 import com.pmf.tihedze.repozitorijradova.exceptions.AuthorNotFoundException
 import com.pmf.tihedze.repozitorijradova.exceptions.VolumeNotFoundException
-import grails.gorm.transactions.NotTransactional
 import grails.gorm.transactions.Transactional
 import groovy.xml.XmlSlurper
 import groovyjarjarantlr.collections.List
@@ -22,31 +23,15 @@ class ArticleService {
     SessionFactory sessionFactory
 
     def getArticles(String query) {
-        if (query != null && !query.isBlank() && !query.isEmpty()) {
-            query = query.replace(' ', " & ")
-            final String rawQuery = """
-            select id, title, summary, volume_id
-            from articles 
-            where summary_search_vector @@ to_tsquery('english', :query)
-            """
-
-            final session = sessionFactory.currentSession
-            final NativeQuery<Article> sqlQuery = session.createNativeQuery(rawQuery)
-            final def results = sqlQuery.with {
-                addEntity(Article)
-                setParameter('query', query)
-                list()
-            }
-            return results
-        }
-        return Article.findAll {it }
+        def articles = Article.findAll()
+        articles
     }
 
     def getByQuery(ArticleQueryCommand command) {
-        def articles;
+        def articles = []
         if (command.summaryText != null && !command.summaryText.isBlank()) {
             final String rawQuery = """
-            select id, title, summary, volume_id
+            select id, title, summary, volume_id, url, year 
             from articles 
             where summary_search_vector @@ to_tsquery('english', :query)
             """
@@ -55,7 +40,7 @@ class ArticleService {
             final NativeQuery<Article> sqlQuery = session.createNativeQuery(rawQuery)
             articles = sqlQuery.with {
                 addEntity(Article)
-                setParameter('query', command.summaryText)
+                setParameter('query', command.summaryText.trim().replace(" ", " & "))
                 list()
             } as List
         }
@@ -66,35 +51,37 @@ class ArticleService {
                 def partialPublicationName = command.publicationName ?: ""
                 def partialVolumeName = command.volumeName ?: ""
                 def partialArticleName = command.articleName ?: ""
+                def partialYear = command.year as Integer
 
                 def publicationMatches = !partialPublicationName || article.volume.publication.title.contains(partialPublicationName)
                 def volumeMatches = !partialVolumeName || article.volume.volume.contains(partialVolumeName)
                 def articleNameMatches = !partialArticleName || article.title.contains(partialArticleName)
+                def yearMatches = !partialYear || article.year == partialYear
 
                 if (command.authorName) {
-                matchedAuthors = article.authors.findAll { author ->
-                    "${author.firstName.toLowerCase()} ${author.lastName.toLowerCase()}".contains(command.authorName)
+                    matchedAuthors = article.authors.findAll { author ->
+                    "${author.firstName.toLowerCase()} ${author.lastName.toLowerCase()}".contains(command.authorName.toLowerCase())
                     }
                 } else {
                     matchedAuthors = article.authors.findAll()
                 }
-                    publicationMatches && volumeMatches && articleNameMatches && !matchedAuthors.empty
+                    publicationMatches && volumeMatches && articleNameMatches && yearMatches &&!matchedAuthors.empty
             }
         }
-        def results = Article.createCriteria().list {
-            // Join with related entities
+        def results = Article.createCriteria().listDistinct {
             createAlias('authors', 'a')
             createAlias('volume', 'v')
             createAlias('v.publication', 'p')
 
-            // Apply filter based on publication name if provided
             if (command.publicationName) {
                 ilike('p.name', "%${command.publicationName}%")
             }
 
             if (command.authorName) {
-            ilike('a.firstName', "%${authorName}%")
-            ilike('a.lastName', "%${authorName}%")
+                or {
+                    ilike('a.firstName', "%${command.authorName}%")
+                    ilike('a.lastName', "%${command.authorName}%")
+                }
             }
 
             if (command.volumeName) {
@@ -102,13 +89,20 @@ class ArticleService {
             }
 
             if (command.articleName) {
-                ilike('a.title',"%${command.articleName}%")
+                ilike('title',"%${command.articleName}%")
             }
+
+            if (command.year) {
+                eq('year', command.year)
+            }
+        }
+
+        if (!results) {
+            return Article.findAll()
         }
 
         return results
     }
-    @NotTransactional
     Article create(CreateArticleCommand command) {
 
         def authors = Author.getAll(command.authorIds)
@@ -117,18 +111,20 @@ class ArticleService {
             throw new AuthorNotFoundException('No authors found with passed ids')
         }
 
-        def article = new Article(title: command.title, summary: command.summary, url: command.url)
+        def article = new Article(title: command.title, summary: command.summary, url: command.url, year: command.year)
 
         authors.each {article.addToAuthors(it)}
 
         def result = Article.withSession { session ->
-            session.beginTransaction()
             session.setFlushMode(FlushMode.COMMIT)
             article.save(flush:true, validate: false)
             session.joinTransaction()
             return article;
-
         }
+
+        authors.each {
+            it.addToArticles(article: article)
+            }*.save(flus: true)
 
         final def query = "UPDATE articles SET summary_search_vector = (select to_tsvector('english', :summary))" +
                 " WHERE id = :id"
@@ -142,7 +138,6 @@ class ArticleService {
             executeUpdate()
         }
         session.joinTransaction()
-
         result
     }
 
@@ -215,31 +210,116 @@ class ArticleService {
     }
 
     def populateDatabase() {
+        def session = sessionFactory.currentSession
         def xml = new URL('https://hrcak.srce.hr/oai/?verb=ListRecords&metadataPrefix=oai_dc&set=journal:27').text
-        def slurper = new XmlSlurper()
-                .parseText(xml)
-                .declareNamespace(
-                        oai_dc: 'http://www.openarchives.org/OAI/2.0/oai_dc/',
-                        dc: 'http://purl.org/dc/elements/1.1/'
+        def (Publication publication,
+        ArrayList<Volume> volumes,
+        LinkedHashMap<String, ArrayList<String>> articleAuthor,
+        LinkedHashMap<String, Author> authorMap) = parseXml(xml)
+        def groupedVolumes = volumes
+                .groupBy {"${it.volume};${it.issue}" }
+                .collectEntries {key, value -> {
+                    [key, value.collectMany {it.articles}]
+                }}
+        publication.save(flush:true)
+        groupedVolumes.collect {
+            def splitName = (it.key as GString).split(';')
+            def volume = new Volume(volume: splitName[0], issue: splitName[1])
+            Tuple.tuple(volume, it.value)
+        }.each { volumeArticle ->
+            volumeArticle[1].each { article ->
+                    def authors = articleAuthor[article.url].collect { authorMap[it] }
+                    authors.each {
+                        article.addToAuthors(it)
+                    }
+                    volumeArticle[0].addToArticles(article)
+                    volumeArticle[0].publication = publication  // Ensure the publication is set
+                    volumeArticle[0].save(flush:true, failOnError: false)
+                    // Add the volume to the publication
+                    publication.addToVolumes(volumeArticle[0])
+            }
+        }
+        publication.save(flush:true)
+
+        final def query = "UPDATE articles SET summary_search_vector = (select to_tsvector('english', summary))"
+
+
+        final def nativeQuery = session.createNativeQuery(query)
+
+        nativeQuery.with {
+            executeUpdate()
+        }
+        session.joinTransaction()
+    }
+
+    private static def parseXml(String xmlText) {
+        def xml = new XmlSlurper().parseText(xmlText).declareNamespace(
+                oai_dc: 'http://www.openarchives.org/OAI/2.0/oai_dc/',
+                dc: 'http://purl.org/dc/elements/1.1/'
+        )
+
+        def more = xml.ListRecords.resumptionToken.text().isBlank()
+
+        Publication publication = new Publication(name: xml.ListRecords.record.metadata.'oai_dc:dc'.'dc:source'[0].text(), source: 'Hrčak',volumes: [])
+        def volumes = []
+        def authorMap = [:]
+        def articleAuthor = [:]
+        def articles = []
+        while(!more) {
+            def token = xml.ListRecords.resumptionToken.text()
+            xml.ListRecords.record.each { record ->
+                def metadata = record.metadata.'oai_dc:dc'
+
+                // Retrieve the URL where xml:lang="eng"
+                def url = metadata.'dc:identifier'.find { it.@'xml:lang' == 'eng' }?.text() ?:
+                        metadata.'dc:identifier'.first().text() ?: ''
+
+                // Create Article object
+                Article article = new Article(
+                        title: metadata.'dc:title'.text(),
+                        summary: metadata.'dc:description'?.text() ?: metadata.'dc:title'.text(),
+                        url: url,
+                        authors: [],
+                        year: metadata.'dc:date'.text() as int
                 )
 
-        def publications = []
-        def authors = []
-        def issues = []
-        def volumes = []
-        def articles = []
+                articleAuthor[article.url] = []
 
-        slurper.ListRecords.record.each {
-            it.metadata.'oai_dc:dc'.'dc:creator'*.each {
-                def line = it.text()
-                def indexOfLastWhitespace = line.lastIndexOf(' ');
-                def firstName = line.substring(0, indexOfLastWhitespace)
-                def lastName = line.substring(indexOfLastWhitespace + 1)
-                authors << new Author(firstName: firstName, lastName: lastName)
-            }
+                articles << article
 
-            publications << new Publication(name: it.metadata.'oai_dc'.'dc:source'*. where { } )
+                // Create Author(s)
+                metadata.'dc:creator'.each { creator ->
+                    def authorName = creator.text().split(' ')
+                    def authorFirstName = authorName[0] ?: 'Unknown'
+                    def authorLastName = authorName.size() > 1 ? authorName[1..-1].join(' '): 'Unknown'
+                    def author = new Author(firstName: authorFirstName, lastName: authorLastName)
+                    if (!authorMap.containsKey("$author.firstName $author.lastName")) {
+                        authorMap["$author.firstName $author.lastName"] = author
+                    }
+                    if (!articleAuthor.containsKey(article.url)) {
+                        articleAuthor[article.url] = []
+                    }
+                    articleAuthor[article.url].add("$author.firstName $author.lastName")
+
+                }
+
+                // Create or retrieve Volume and associate it with the article
+                    def volume = new Volume(
+                            volume: metadata.'dc:source'.find { it.text().contains('Volume') }?.text(),
+                            issue: metadata.'dc:source'.find { it.text().contains('Issue') }?.text(),
+                            articles: [])
+
+                volume.publication = publication
+                volumes << volume
+                volume.articles << article
+                }
+            more = xml.ListRecords.resumptionToken.text().isBlank()
+            def raw = new URL("https://hrcak.srce.hr/oai/?verb=ListRecords&resumptionToken=$token").text
+            xml = new XmlSlurper().parseText(raw).declareNamespace(
+                    oai_dc: 'http://www.openarchives.org/OAI/2.0/oai_dc/',
+                    dc: 'http://purl.org/dc/elements/1.1/'
+            )
         }
-
+        return Tuple.tuple(publication, volumes, articleAuthor, authorMap)
     }
 }

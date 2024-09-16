@@ -18,7 +18,8 @@ class VolumeService {
     }
 
     Volume getById(UUID volumeId) {
-        Volume.findById(volumeId)
+        def v = Volume.findById(volumeId)
+        v
     }
 
     List<Volume> getAllByPublicationName(String query) {

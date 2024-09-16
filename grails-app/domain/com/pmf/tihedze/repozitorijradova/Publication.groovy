@@ -10,6 +10,7 @@ class Publication {
         id column: 'id', type: 'pg-uuid', generator: 'uuid2'
         name column: 'name', sqlType: 'varchar'
         source column: 'source', sqlType: 'varchar'
+        volumes joinTable: 'volumes', column: 'publication_id'
         version false
     }
 

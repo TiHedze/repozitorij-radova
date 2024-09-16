@@ -12,6 +12,8 @@ databaseChangeLog = {
 
             column(name: "volume_id", type: "uuid")
 
+            column(name: 'year', type:'integer')
+
             column(name: "summary_search_vector", type:"tsvector")
 
             column(name: "title", type: "VARCHAR") {
@@ -51,18 +53,6 @@ databaseChangeLog = {
             }
 
             column(name: "last_name", type: "VARCHAR") {
-                constraints(nullable: "false")
-            }
-        }
-    }
-
-    changeSet(author: "tihedze (generated)", id: "1726075322684-5") {
-        createTable(tableName: "authors_articles") {
-            column(name: "article_id", type: "uuid") {
-                constraints(nullable: "false")
-            }
-
-            column(name: "author_id", type: "uuid") {
                 constraints(nullable: "false")
             }
         }
@@ -134,15 +124,7 @@ databaseChangeLog = {
         addForeignKeyConstraint(baseColumnNames: "article_id", baseTableName: "articles_authors", constraintName: "FKfdw48vudwpjcsfypljm4wmon0", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "id", referencedTableName: "articles", validate: "true")
     }
 
-    changeSet(author: "tihedze (generated)", id: "1726075322684-13") {
-        addForeignKeyConstraint(baseColumnNames: "author_id", baseTableName: "authors_articles", constraintName: "FKj4l5hhil1lfvydewru8cdyjgb", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "id", referencedTableName: "authors", validate: "true")
-    }
-
     changeSet(author: "tihedze (generated)", id: "1726075322684-14") {
         addForeignKeyConstraint(baseColumnNames: "publication_id", baseTableName: "volumes", constraintName: "FKl538l10qgswbl2lwv296g6yp9", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "id", referencedTableName: "publications", validate: "true")
-    }
-
-    changeSet(author: "tihedze (generated)", id: "1726075322684-15") {
-        addForeignKeyConstraint(baseColumnNames: "article_id", baseTableName: "authors_articles", constraintName: "FKmmxwqa8hq2yrl31l8wy654yo0", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "id", referencedTableName: "articles", validate: "true")
     }
 }

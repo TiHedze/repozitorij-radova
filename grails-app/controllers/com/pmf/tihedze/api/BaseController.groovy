@@ -25,7 +25,7 @@ abstract class BaseController {
         respond([status: HttpStatus.NOT_FOUND], [message: exception.message])
     }
 
-    def handleRuntimeException(RuntimeException exception) {
+    def handleRuntimeException(Exception exception) {
         respond([status: HttpStatus.INTERNAL_SERVER_ERROR], [message: exception.message])
     }
 }

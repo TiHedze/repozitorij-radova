@@ -11,7 +11,7 @@ class VolumeResponse {
 
     VolumeResponse(Volume volume) {
         id = volume.id.toString()
-        volume = volume.volume
+        this.volume = volume.volume
         issue = volume.issue
         articles = volume.articles.collect { new ArticleResponse(it)}
         publicationName = volume.publication.name

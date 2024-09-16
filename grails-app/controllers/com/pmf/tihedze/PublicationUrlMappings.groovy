@@ -11,6 +11,7 @@ class PublicationUrlMappings {
                 post "/"(versionedController << [action: 'create'])
                 put "/$id"(versionedController << [action: 'update'])
                 delete "/$id"(versionedController << [action: 'delete'])
+                get "/populate"(versionedController << [action: 'populateDatabase'])
             }
         }
     }

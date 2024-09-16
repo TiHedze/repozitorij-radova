@@ -14,7 +14,7 @@ class Volume {
     }
 
     static hasMany = [articles: Article]
-    static hasOne = [publication: Publication]
+    static belongsTo = [publication: Publication]
 
     static constraints = {
         publication nullable: true

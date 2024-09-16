@@ -16,9 +16,7 @@ class AuthorService {
     }
 
     def getById(UUID id) {
-        def author = Author.where{
-            id == id
-        }.join('articles').get()
+        def author = Author.findById(id)
         return new AuthorResponse(author)
 
     }

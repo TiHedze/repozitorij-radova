@@ -7,6 +7,7 @@ class CreateArticleCommand implements Validateable {
     String title
     ArrayList<UUID> authorIds
     String url
+    Integer year
 
     static constraints = {
         authorIds validator: {
@@ -14,5 +15,6 @@ class CreateArticleCommand implements Validateable {
         }
         summary blank: false, nullable: false
         title blank: false, nullable: false
+        year nullable: false
     }
 }

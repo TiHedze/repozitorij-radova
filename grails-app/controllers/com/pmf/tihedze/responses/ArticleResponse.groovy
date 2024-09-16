@@ -18,10 +18,10 @@ class ArticleResponse {
         title = article.title
         summary = article.summary
         authors = article.authors.collect { new AuthorArticleResponse(it)}
-        volumeName = article.volume.volume
-        volumeId = article.volume.id.toString()
-        publicationName = article.volume.publication.name
-        publicationId = article.volume.publication.id.toString()
+        volumeName = article.volume?.volume
+        volumeId = article.volume?.id?.toString()
+        publicationName = article.volume?.publication?.name
+        publicationId = article.volume?.publication?.id?.toString()
         url = article.url
     }
 }

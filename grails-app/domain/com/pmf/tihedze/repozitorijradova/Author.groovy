@@ -14,4 +14,5 @@ class Author {
     }
 
     static hasMany = [articles: Article]
+    static belongsTo = [Article]
 }

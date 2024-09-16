@@ -4,14 +4,17 @@ import com.pmf.tihedze.api.BaseController
 import com.pmf.tihedze.repozitorijradova.Publication
 import com.pmf.tihedze.repozitorijradova.commands.publication.CreatePublicationCommand
 import com.pmf.tihedze.repozitorijradova.commands.publication.UpdatePublicationCommand
+import com.pmf.tihedze.repozitorijradova.services.ArticleService
 import com.pmf.tihedze.repozitorijradova.services.PublicationService
 import com.pmf.tihedze.responses.PublicationResponse
+import org.apache.tools.ant.taskdefs.condition.Http
 import org.springframework.http.HttpStatus
 
 class PublicationController extends BaseController {
     static namespace = 'v1'
 
     PublicationService publicationService
+    ArticleService articleService
 
     def create(CreatePublicationCommand command) {
         final def publication = publicationService.create(command)
@@ -39,6 +42,22 @@ class PublicationController extends BaseController {
         final def uuid = UUID.fromString(id)
         publicationService.delete(uuid)
         respond([status: HttpStatus.ACCEPTED])
+    }
+
+    def populateDatabase() {
+        try {
+            def result
+            if (params.get('token')) {
+                 result = articleService.populateDatabase(params.get('token'))
+            }else {
+                result = articleService.populateDatabase()
+            }
+
+            respond([status: HttpStatus.OK], [token: result])
+
+        } catch(Exception ex) {
+            log.error(ex.message)
+        }
     }
 
     private def successResponse(Publication publication) {

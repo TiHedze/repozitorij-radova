@@ -4,6 +4,8 @@ info:
     version: '@info.app.version@'
     grailsVersion: '@info.app.grailsVersion@'
 grails:
+  gorm:
+    flushMode: ALWAYS
   plugin:
     databasemigration:
       updateOnStart: true
@@ -28,6 +30,8 @@ grails:
 
 hibernate:
   dialect: org.hibernate.dialect.PostgreSQL10Dialect
+  order_inserts: true
+  order_updates: true
   cache:
     queries: false
     use_second_level_cache: false

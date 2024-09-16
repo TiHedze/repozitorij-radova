@@ -15,7 +15,7 @@ class ArticleController extends BaseController{
     ArticleService articleService
 
     def getAll() {
-        final def articles = articleService.getArticles(query)
+        final def articles = articleService.getArticles()
         successResponse(articles)
     }
 
@@ -47,9 +47,6 @@ class ArticleController extends BaseController{
         respond([status: HttpStatus.ACCEPTED])
     }
 
-    def populateDatabase() {
-
-    }
 
     private def successResponse(Article article) {
         final def response = new ArticleResponse(article)

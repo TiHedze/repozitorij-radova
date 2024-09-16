@@ -5,6 +5,7 @@ class Article {
     String title
     String summary
     String url
+    int year
 
     static mapping = {
         table name: 'articles'
@@ -12,11 +13,13 @@ class Article {
         title column: 'title', sqlType: 'varchar'
         summary column: 'summary', sqlType: 'text'
         url column: 'url', sqlType: 'varchar'
+        year column: 'year', sqlType: 'integer'
         version false
     }
 
     static hasMany = [authors: Author]
     static hasOne = [volume: Volume]
+    static belongsTo= [Volume]
 
     static constraints = {
         title unique: true
